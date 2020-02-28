@@ -1,0 +1,19 @@
+  /new:
+    get:
+      tags: [New]
+      summary: Endpoint to create new UUID Game
+      operationId: hangman_backend.new
+      responses:
+        200:
+          description: Return new game
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewGame'
+
+    NewGame:
+      type: object
+      properties:
+        uuid:
+          type: string
+          example: 'a8098c1a-f86e-11da-bd1a-00112444be1e'
