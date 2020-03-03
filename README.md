@@ -35,3 +35,4 @@ npm start
 ## Extra:
 Validações:
    - Incluir tempo máximo para terminar
+   - Remover o uso de arquivo YAML para usar SQLite

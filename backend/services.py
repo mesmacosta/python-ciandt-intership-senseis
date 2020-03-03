@@ -12,54 +12,16 @@ MAX_TRIRES = 6
 __all__ = ['start_game', 'gess_word', 'reset_game']
 
 def gess_word(_id: str, gess: str):
-	data = get_game(_id)
-
-	if data.get('result', None):
-		return data
-
-	word = data['word']
-	find = data['find']
-
-	findings = [m.start() for m in re.finditer(gess.lower(), word.lower())]
-	for idx in findings:
-		find = find[:idx] + gess + find[idx+1:]
-
-	data['find'] = find
-	if find.find('_') < 0:
-		data['result'] = 'win'
-
-	print(json.dumps(data, indent = 3))
-	if data['tries'] + 1 > MAX_TRIRES:
-		data['result'] = 'lose'
-
-	save_game(_id, data)
-
-	return data
+	return {}
 	
 def new_id():
-	return uuid.uuid1()
+	return 'asdf123'
 
 def reset_game(_id):
 	return 'success'
 
 def start_game(_id):
-	word = HANGMAN_DATA[2]
-	find = word
-
-	for a in word:
-		if a != ' ':
-			find = find.replace(a, '_')
-
-	data = new_game({
-		_id: {
-			'word': word,
-			'find': find,
-			'tries': 0,
-			'result': ''
-		}
-	})
-
-	return data[_id]
+	return {}
 
 HANGMAN_DATA = [
 	"Alura",
@@ -89,25 +51,3 @@ HANGMAN_DATA = [
 	"Journey and Ambiguity",
 	"Lean Startup Week"
 ]
-
-
-if __name__ == '__main__':
-	import pprint
-
-	_id = str(uuid.uuid1())
-	pprint.pprint(start_game(_id))
-	gess_word(_id, 'D')
-	gess_word(_id, 'i')
-	gess_word(_id, 'r')
-	gess_word(_id, 'b')
-	gess_word(_id, 'm')
-	gess_word(_id, 'p')
-	gess_word(_id, 'a')
-	gess_word(_id, 'c')
-	gess_word(_id, 'e')
-	gess_word(_id, 'n')
-	gess_word(_id, 'p')
-	gess_word(_id, 'y')
-	gess_word(_id, 'v')
-	gess_word(_id, 't')
-	pprint.pprint(gess_word(_id, 'I'))
