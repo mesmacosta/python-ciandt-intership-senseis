@@ -22,3 +22,5 @@ components:
         status_code:
           type: integer
           example: 404
+{% for item in schemas %}{% include item %}{% endfor %}
+

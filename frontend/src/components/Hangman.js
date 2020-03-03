@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import { randomWord } from "./words";
 
 import step0 from "./images/0.jpg";
 import step1 from "./images/1.jpg";
@@ -17,9 +16,38 @@ class Hangman extends Component {
 
 	constructor(props) {
 		super(props);
-		this.state = { mistake: 0, guessed: new Set(), answer: randomWord().toUpperCase() };
+		this.state = { mistake: 0, guessed: new Set(), answer: '' };
 		this.handleGuess = this.handleGuess.bind(this);
 		this.state.guessed.add(" ")
+	}
+
+	componentDidMount() {
+		fetch('/api/v1/new/')
+			.then(res => res.json())
+			.then((result) => {
+				this.setState({
+					isLoaded: true,
+					gameId: result.game_id
+				});
+				//console.log('New '+ this.state.gameId)
+			},
+			(error) => {
+				console.error('error to fetch start game')
+				console.log(JSON.stringify(error))	
+			}).then(() => {
+				fetch('/api/v1/start/'+ this.state.gameId, { method:'POST'})
+					.then(res => res.json())
+					.then((result) => {
+						this.setState(st => ({
+							game: result.data,
+							answer: result.data.word.toUpperCase()
+						}));
+					}, 
+				(error) => {
+					console.error('error to fetch start game!')
+					console.log(JSON.stringify(error))
+				})
+			});
 	}
 
 	guessedWord() {
@@ -28,10 +56,21 @@ class Hangman extends Component {
 
 	handleGuess(evt) {
 		let letter = evt.target.value.toUpperCase();
-		this.setState(st => ({
-			guessed: st.guessed.add(letter),
-			mistake: st.mistake + (st.answer.includes(letter) ? 0 : 1)
-		}));
+		console.log('val: '+ evt.target.value)
+		fetch('/api/v1/gess/' + this.state.gameId + '?gess=' + letter, { method: 'POST'})
+		.then(res => res.json())
+		.then((result) => {
+			this.setState(st => ({
+				isLoaded: true,
+				gameId: result.game_id,
+				game: result.data,
+				guessed: st.guessed.add(letter),
+				mistake: result.data.traies
+			}));
+		},
+		(error) => {
+			console.error('error to fetch start game')
+		})
 	}
 
 	generateButtons() {
@@ -48,19 +87,29 @@ class Hangman extends Component {
 	}
 
 	resetButton = () => {
+		//TODO usar o endpont RESET
 		let guessed = new Set();
 		guessed.add(" ")
+		this.componentDidMount()
 		this.setState({
 			mistake: 0,
-			guessed: guessed,
-			answer: randomWord().toUpperCase()
+			guessed: guessed
 		});
 	};
 
 	render() {
-		const gameOver = this.state.mistake >= this.props.maxWrong;
-		const altText = `${this.state.mistake}/${this.props.maxWrong} wrong guesses`;
-		const isWinner = this.guessedWord().join("") === this.state.answer;
+
+		let gameOver = false;
+		let altText = '0 wrong guesses';
+		let isWinner = false;
+
+		if (this.state.game !== undefined) {
+			gameOver = this.state.game.result === 'lose';
+			altText = `${this.state.game.traies} wrong guesses`;
+			isWinner = this.state.game.result === 'win';
+		}
+		
+		
 		let gameStat = this.generateButtons();
 		if (isWinner) {
 			gameStat = "YOU WON";
@@ -68,7 +117,7 @@ class Hangman extends Component {
 		if (gameOver) {
 			gameStat = "YOU LOST";
 		}
-
+		
 		return (
 			<div className='Hangman'>
 				<nav className='navbar navbar-expand-lg'>
